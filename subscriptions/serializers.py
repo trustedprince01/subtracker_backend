@@ -17,3 +17,16 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         model = Subscription
         fields = '__all__'
         read_only_fields = ('user',)
+
+    def validate(self, data):
+        user = self.context['request'].user
+        name = data.get('name')
+        # For create
+        if self.instance is None:
+            if Subscription.objects.filter(user=user, name=name).exists():
+                raise serializers.ValidationError({'name': f"You already have a subscription named '{name}'."})
+        # For update
+        else:
+            if Subscription.objects.filter(user=user, name=name).exclude(pk=self.instance.pk).exists():
+                raise serializers.ValidationError({'name': f"You already have a subscription named '{name}'."})
+        return data
