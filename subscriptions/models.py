@@ -8,7 +8,7 @@ class Subscription(models.Model):
     cycle = models.CharField(max_length=10, choices=[('monthly', 'Monthly'), ('yearly', 'Yearly')])
     next_billing_date = models.DateField()
     category = models.CharField(max_length=50)
-    logo = models.URLField(blank=True, null=True)
+    logo = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} ({self.user.username})"
