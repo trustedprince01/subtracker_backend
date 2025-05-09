@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,6 +46,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -130,6 +137,42 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:5173",
+    "http://localhost:8000",
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 REST_FRAMEWORK = {
@@ -143,4 +186,29 @@ from datetime import timedelta
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+import os
+
+# Cloudinary Configuration
+import cloudinary
+
+# Debug print environment variables
+print(f"ENV - CLOUDINARY_CLOUD_NAME: {os.environ.get('CLOUDINARY_CLOUD_NAME')}")
+print(f"ENV - CLOUDINARY_API_KEY: {os.environ.get('CLOUDINARY_API_KEY')}")
+print(f"ENV - CLOUDINARY_API_SECRET: {'*' * len(os.environ.get('CLOUDINARY_API_SECRET', '')) if os.environ.get('CLOUDINARY_API_SECRET') else 'Not Set'}")
+
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', 'decwpzzbg'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY', '824589722915937'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET', 'ZODfjPV1-1zHiZCXypBXJiCqfmY')
+)
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': cloudinary.config().cloud_name,
+    'API_KEY': cloudinary.config().api_key,
+    'API_SECRET': cloudinary.config().api_secret,
 }

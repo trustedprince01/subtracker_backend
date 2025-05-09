@@ -6,12 +6,13 @@ from django.contrib.auth import authenticate
 from .serializers import UserSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .serializers import SubscriptionSerializer
-from .models import Subscription
+from .serializers import UserSerializer, SubscriptionSerializer
+from .models import Subscription, Profile
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
+import cloudinary.uploader
 
 User = get_user_model()
 
@@ -60,15 +61,61 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 class UserProfileView(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
+    @action(detail=False, methods=['get', 'patch'], url_path='me')
+    def me(self, request):
+        if request.method == 'GET':
+            return self.retrieve(request)
+        elif request.method == 'PATCH':
+            return self.partial_update(request)
+
     def retrieve(self, request):
         user = request.user
+        # Ensure profile exists
+        Profile.objects.get_or_create(user=user)
         data = {
             'id': user.id,
             'username': user.username,
             'email': user.email,
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'title': user.first_name + ' ' + user.last_name,  # Example title
-            'avatar': 'https://ui-avatars.com/api/?name=' + user.username,  # Example avatar
+            'title': user.first_name + ' ' + user.last_name,
+            'avatar': user.profile.avatar.url if user.profile.avatar else None,
+            'date_joined': user.date_joined.strftime('%Y-%m-%d') if user.date_joined else None,
         }
         return Response(data)
+
+    def partial_update(self, request):
+        user = request.user
+        profile, created = Profile.objects.get_or_create(user=user)
+        
+        try:
+            # Update user fields
+            if 'first_name' in request.data:
+                user.first_name = request.data['first_name']
+            if 'last_name' in request.data:
+                user.last_name = request.data['last_name']
+            if 'username' in request.data:
+                user.username = request.data['username']
+            
+            # Handle avatar upload to Cloudinary
+            if 'avatar' in request.FILES:
+                # Upload to Cloudinary
+                result = cloudinary.uploader.upload(
+                    request.FILES['avatar'],
+                    folder="profile_avatars",
+                    resource_type="image"
+                )
+                # Update profile with Cloudinary URL
+                profile.avatar = result['secure_url']
+            
+            user.save()
+            profile.save()
+            
+            # Return updated user data
+            return self.retrieve(request)
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
