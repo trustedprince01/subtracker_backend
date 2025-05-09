@@ -23,3 +23,25 @@ class Subscription(models.Model):
 
     class Meta:
         unique_together = ('user', 'name')
+
+class UserActivity(models.Model):
+    ACTIVITY_TYPES = [
+        ('subscription_added', 'Subscription Added'),
+        ('subscription_removed', 'Subscription Removed'),
+        ('profile_updated', 'Profile Updated'),
+        ('login', 'User Login'),
+        ('password_changed', 'Password Changed'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activities')
+    type = models.CharField(max_length=50, choices=ACTIVITY_TYPES)
+    description = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    metadata = models.JSONField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.type} at {self.timestamp}'
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name_plural = 'User Activities'

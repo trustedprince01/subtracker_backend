@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Subscription
+from .models import Subscription, UserActivity
 
 from django.utils import timezone
 
@@ -20,6 +20,18 @@ class UserSerializer(serializers.ModelSerializer):
             'plan_type', 'payment_method', 'profile_image'
         )
         extra_kwargs = {'password': {'write_only': True}}
+
+    def validate_email(self, value):
+        # Ensure email is unique
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('A user with this email already exists.')
+        return value
+
+    def create(self, validated_data):
+        # Use email as username
+        validated_data['username'] = validated_data['email']
+        user = User.objects.create_user(**validated_data)
+        return user
 
     def get_creation_date(self, obj):
         return obj.date_joined.strftime('%Y-%m-%d %H:%M:%S') if obj.date_joined else None
@@ -72,3 +84,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             if Subscription.objects.filter(user=user, name=name).exclude(pk=self.instance.pk).exists():
                 raise serializers.ValidationError({'name': f"You already have a subscription named '{name}'."})
         return data
+
+class UserActivitySerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = UserActivity
+        fields = ['id', 'username', 'type', 'description', 'timestamp', 'metadata']

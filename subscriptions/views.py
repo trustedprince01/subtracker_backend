@@ -6,13 +6,26 @@ from django.contrib.auth import authenticate
 from .serializers import UserSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .serializers import UserSerializer, SubscriptionSerializer
-from .models import Subscription, Profile
+from .serializers import UserSerializer, SubscriptionSerializer, UserActivitySerializer
+from .models import Subscription, UserActivity, Profile
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, permissions
 from rest_framework.decorators import action
+from .models import UserActivity
 from django.contrib.auth import get_user_model
 import cloudinary.uploader
+
+def create_user_activity(user, activity_type, description, metadata=None):
+    try:
+        UserActivity.objects.create(
+            user=user,
+            type=activity_type,
+            description=description,
+            metadata=metadata or {}
+        )
+    except Exception as e:
+        # Log the error or handle it appropriately
+        print(f"Failed to create user activity: {e}")
 
 User = get_user_model()
 
@@ -41,22 +54,59 @@ class SubscriptionDetailView(RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Subscription.objects.filter(user=self.request.user)
 
+    def perform_destroy(self, instance):
+        create_user_activity(
+            user=self.request.user,
+            activity_type='subscription_removed',
+            description=f'Removed subscription: {instance.name}',
+            metadata={'subscription_id': instance.id}
+        )
+        instance.delete()
+
 class SubscriptionViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Subscription.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        subscription = serializer.save(user=self.request.user)
+        create_user_activity(
+            user=self.request.user,
+            activity_type='subscription_added',
+            description=f'Added subscription: {subscription.name}',
+            metadata={'subscription_id': subscription.id}
+        )
+
+    def perform_destroy(self, instance):
+        create_user_activity(
+            user=self.request.user,
+            activity_type='subscription_removed',
+            description=f'Removed subscription: {instance.name}',
+            metadata={'subscription_id': instance.id}
+        )
+        instance.delete()
 
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
         subscription = self.get_object()
         subscription.status = 'cancelled'
         subscription.save()
+        create_user_activity(
+            user=self.request.user,
+            activity_type='subscription_cancelled',
+            description=f'Cancelled subscription: {subscription.name}',
+            metadata={'subscription_id': subscription.id}
+        )
         return Response({'status': 'subscription cancelled'})
+
+class UserActivityViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = UserActivitySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return UserActivity.objects.filter(user=self.request.user).order_by('-timestamp')[:50]
 
 class UserProfileView(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
