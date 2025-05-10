@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import RegisterView, SubscriptionListCreateView, SubscriptionDetailView, SubscriptionViewSet, UserProfileView
+from .views import (RegisterView, SubscriptionListCreateView, SubscriptionDetailView, 
+    SubscriptionViewSet, UserProfileView, UserActivityViewSet)
 from .user_views import UserProfileAvatarUploadView, UserProfileUpdateView
 from rest_framework_simplejwt.views import TokenRefreshView
 from .custom_auth import CustomTokenObtainPairView
@@ -8,6 +9,7 @@ from .custom_auth import CustomTokenObtainPairView
 router = DefaultRouter()
 router.register(r'subscriptions', SubscriptionViewSet, basename='subscription')
 router.register(r'user/profile', UserProfileView, basename='user-profile')
+router.register(r'user/activities', UserActivityViewSet, basename='user-activities')
 
 urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

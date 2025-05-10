@@ -9,8 +9,9 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from .serializers import UserSerializer, SubscriptionSerializer, UserActivitySerializer
 from .models import Subscription, UserActivity, Profile
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework import viewsets, permissions, permissions
+from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import UserActivity
 from django.contrib.auth import get_user_model
 import cloudinary.uploader
@@ -78,6 +79,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             description=f'Added subscription: {subscription.name}',
             metadata={'subscription_id': subscription.id}
         )
+        return subscription
 
     def perform_destroy(self, instance):
         create_user_activity(
@@ -103,10 +105,15 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
 class UserActivityViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserActivitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         return UserActivity.objects.filter(user=self.request.user).order_by('-timestamp')[:50]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 class UserProfileView(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
