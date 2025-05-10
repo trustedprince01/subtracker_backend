@@ -147,7 +147,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "https://subtraker.netlify.app",
-     "https://subtraker.netlify.app/",
+    
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
