@@ -34,7 +34,7 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'https://sub-tracker.up.railway.app/',  # This will allow all Railway subdomains
+    'sub-tracker.up.railway.app',
 ]
 
 
