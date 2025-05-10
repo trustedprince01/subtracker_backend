@@ -20,5 +20,7 @@ urlpatterns = [
     path('login/', CustomTokenObtainPairView.as_view(), name='login'),
     path('subscriptions/', SubscriptionListCreateView.as_view(), name='subscriptions'),
     path('subscriptions/<int:pk>/', SubscriptionDetailView.as_view(), name='subscription-detail'),
+    path('auth/', include('dj_rest_auth.urls')),
+    path('auth/', include('dj_rest_auth.registration.urls')),
     path('', include(router.urls)),
 ]

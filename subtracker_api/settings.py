@@ -48,6 +48,11 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'cloudinary',
     'cloudinary_storage',
+    'dj_rest_auth',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +62,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -212,3 +218,14 @@ CLOUDINARY_STORAGE = {
     'API_KEY': cloudinary.config().api_key,
     'API_SECRET': cloudinary.config().api_secret,
 }
+
+# Email backend for development (prints emails to console)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+EMAIL_HOST_USER = 'd0de75b9efc91b'
+EMAIL_HOST_PASSWORD = '5d375eb38f7788'
+EMAIL_PORT = 2525
+DEFAULT_FROM_EMAIL = 'noreply@subtracker.com'
+
+# Tell dj-rest-auth to use JWT instead of token auth
+REST_USE_JWT = True
