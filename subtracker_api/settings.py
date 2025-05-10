@@ -144,7 +144,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:5173",
     "http://localhost:8000",
-    "https://subtraker.netlify.app/",
+    "https://subtraker.netlify.app",
 ]
 
 CORS_ALLOW_METHODS = [
