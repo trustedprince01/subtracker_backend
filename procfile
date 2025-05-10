@@ -1,1 +1,1 @@
-web: gunicorn subtracker_api.wsgi 
+web: gunicorn subtracker_api.wsgi
