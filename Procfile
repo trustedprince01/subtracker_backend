@@ -1,0 +1,1 @@
+web: gunicorn subtracker_api.wsgi
