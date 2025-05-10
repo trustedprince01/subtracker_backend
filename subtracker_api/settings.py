@@ -147,7 +147,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "https://subtraker.netlify.app",
+     "https://subtraker.netlify.app/",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -233,4 +236,4 @@ DEFAULT_FROM_EMAIL = 'noreply@subtracker.com'
 # Tell dj-rest-auth to use JWT instead of token auth
 REST_USE_JWT = True
 
-CORS_ALLOW_ALL_ORIGINS = True
+
