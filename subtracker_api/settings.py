@@ -98,18 +98,11 @@ WSGI_APPLICATION = 'subtracker_api.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3'),
-        conn_max_age=600,
-        ssl_require=not DEBUG
-    )
-}
-
-# SSL Configuration for Supabase
-if not DEBUG and 'supabase' in os.getenv('DATABASE_URL', ''):
-    DATABASES['default']['OPTIONS'] = {
-        'sslmode': 'require',
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
+}
 
 
 # Password validation
@@ -154,13 +147,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# CORS Settings
 CORS_ALLOWED_ORIGINS = [
-    "https://subtraker.netlify.app",
-    
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
 ]
 
+# For development only - disable in production
 CORS_ALLOW_ALL_ORIGINS = True
 
+# Allowed methods
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -170,6 +166,7 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 
+# Allowed headers
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -180,21 +177,30 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'apikey',
+    'x-client-info',
 ]
 
+# Allow credentials (cookies, authorization headers) to be included in cross-site requests
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
+# CSRF and session settings for local development
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
 ]
+
+# Required for CSRF with session authentication
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
+
+# Only set to 'None' if using HTTPS
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
