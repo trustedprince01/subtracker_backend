@@ -35,7 +35,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'sub-tracker.up.railway.app',
-    'https://fsusdawxrkfbhanlxnit.supabase.co'
+    'fsusdawxrkfbhanlxnit.supabase.co'
 ]
 
 
